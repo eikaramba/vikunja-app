@@ -4,7 +4,7 @@ import 'package:vikunja_app/global.dart';
 import 'dart:developer';
 import '../models/task.dart';
 
-enum NewTaskDue { day, week, month, custom }
+enum NewTaskDue { none, day, week, month, custom }
 
 // TODO: add to enum above
 Map<NewTaskDue, Duration> newTaskDueToDuration = {
@@ -25,13 +25,13 @@ class AddDialog extends StatefulWidget {
 }
 
 class AddDialogState extends State<AddDialog> {
-  NewTaskDue newTaskDue = NewTaskDue.day;
+  NewTaskDue newTaskDue = NewTaskDue.none;
   DateTime? customDueDate;
   var textController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    if (newTaskDue != NewTaskDue.custom)
+    if (newTaskDue != NewTaskDue.custom && newTaskDue != NewTaskDue.none)
       customDueDate = DateTime.now().add(newTaskDueToDuration[newTaskDue]!);
     return new AlertDialog(
       contentPadding: const EdgeInsets.all(16.0),
@@ -45,6 +45,9 @@ class AddDialogState extends State<AddDialog> {
             ),
           ),
         ]),
+        widget.onAddTask != null
+            ? taskDueList("None", NewTaskDue.none)
+            : new Container(),
         widget.onAddTask != null
             ? taskDueList("1 Day", NewTaskDue.day)
             : new Container(),

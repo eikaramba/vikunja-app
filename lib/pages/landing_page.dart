@@ -233,11 +233,11 @@ class LandingPageState extends State<LandingPage>
     await globalState.taskService.add(
       defaultList!,
       Task(
-        title: title,
-        dueDate: dueDate,
-        createdBy: globalState.currentUser!,
-        projectId: defaultList!,
-      ),
+          title: title,
+          startDate: dueDate,
+          createdBy: globalState.currentUser!,
+          projectId: defaultList!,
+          priority: 3),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
