@@ -15,6 +15,7 @@ class TaskTile extends StatefulWidget {
   final Task task;
   final Function onEdit;
   final bool showInfo;
+  final bool showPriority;
   final bool loading;
   final ValueSetter<bool>? onMarkedAsDone;
 
@@ -24,6 +25,7 @@ class TaskTile extends StatefulWidget {
     required this.onEdit,
     this.loading = false,
     this.showInfo = false,
+    this.showPriority = true,
     this.onMarkedAsDone,
   }) : super(key: key);
 /*
@@ -37,7 +39,8 @@ class TaskTile extends StatefulWidget {
   TaskTileState createState() => TaskTileState(this.task);
 }
 
-Widget? _buildTaskSubtitle(Task? task, bool showInfo, BuildContext context) {
+Widget? _buildTaskSubtitle(
+    Task? task, bool showInfo, bool showPriority, BuildContext context) {
   Duration? durationUntilDue = task?.dueDate?.difference(DateTime.now());
 
   if (task == null) return null;
@@ -51,7 +54,7 @@ Widget? _buildTaskSubtitle(Task? task, bool showInfo, BuildContext context) {
             ? TextStyle(color: Colors.red)
             : Theme.of(context).textTheme.bodyMedium));
   }
-  if (task.priority != null && task.priority != 0) {
+  if (showPriority && task.priority != null && task.priority != 0) {
     texts.add(TextSpan(
         text: " !" + priorityToString(task.priority),
         style: TextStyle(color: Colors.orange)));
@@ -132,7 +135,8 @@ class TaskTileState extends State<TaskTile> with AutomaticKeepAliveClientMixin {
                 ),
               ))
             : Text(_currentTask.title),
-        subtitle: _buildTaskSubtitle(widget.task, widget.showInfo, context),
+        subtitle: _buildTaskSubtitle(
+            widget.task, widget.showInfo, widget.showPriority, context),
         leading: Checkbox(
           value: _currentTask.done,
           onChanged: (bool? newValue) {

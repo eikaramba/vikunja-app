@@ -143,6 +143,9 @@ class LandingPageState extends State<LandingPage>
       body: RefreshIndicator(onRefresh: () => _loadList(context), child: body),
       floatingActionButton: Builder(
           builder: (context) => FloatingActionButton(
+                foregroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
                 onPressed: () {
                   _addItemDialog(context);
                 },
@@ -246,12 +249,6 @@ class LandingPageState extends State<LandingPage>
     _loadList(context).then((value) => setState(() {}));
   }
 
-  List<Widget> _listTasks(BuildContext context) {
-    var tasks = (_tasks.map((task) => _buildTile(task, context))).toList();
-    //tasks.addAll(_loadingTasks.map(_buildLoadingTile));
-    return tasks;
-  }
-
   TaskTile _buildTile(Task task, BuildContext context) {
     // key: UniqueKey() seems like a weird workaround to fix the loading issue
     // is there a better way?
@@ -260,6 +257,7 @@ class LandingPageState extends State<LandingPage>
       task: task,
       onEdit: () => _loadList(context),
       showInfo: true,
+      showPriority: false,
     );
   }
 
