@@ -9,11 +9,16 @@
       "deviceId": "chrome",
     },
     {
-      "name": "Flutter",
-      "request": "launch",
-      "type": "dart",
-      "flutterMode": "debug",
-      "args": ["--flavor", "main"]
-    }
+      "name":"Flutter",
+      "request":"launch",
+      "type":"dart",
+      "flutterMode":"debug",
+      "program":"lib/main.dart",
+      "args":[
+         "--flavor",
+         "unsigned"
+      ]
+   }
+   
   ]
 }
