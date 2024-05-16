@@ -158,10 +158,10 @@ abstract class TaskService {
 
   Future<Task?> add(int listId, Task task);
 
-  Future<List<Task>?> getAll();
+  Future<List<Task>?> getAll([Map<String, dynamic>? queryParameters]);
 
   Future<Response?> getAllByProject(int projectId,
-      [Map<String, List<String>> queryParameters]);
+      [Map<String, dynamic> queryParameters]);
 
   Future<List<Task>?> getByOptions(TaskServiceOptions options);
 
@@ -255,6 +255,16 @@ class SettingsManager {
 
   void setIgnoreCertificates(bool value) {
     _storage.write(key: "ignore-certificates", value: value ? "1" : "0");
+  }
+
+  Future<bool> getShowUpcomingTasks() {
+    return _storage
+        .read(key: "show-upcoming-tasks")
+        .then((value) => value == "1");
+  }
+
+  Future<void> setShowUpcomingTasks(bool value) {
+    return _storage.write(key: "show-upcoming-tasks", value: value ? "1" : "0");
   }
 
   Future<bool> getLandingPageOnlyDueDateTasks() {

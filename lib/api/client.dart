@@ -101,8 +101,34 @@ class Client {
     authenticated = false;
   }
 
-  Future<Response?> get(String url,
-      [Map<String, List<String>>? queryParameters]) {
+  String queryString(Map<String, dynamic> queryParameters) {
+    var result = StringBuffer();
+    var separator = "";
+
+    void writeParameter(String key, String? value) {
+      result.write(separator);
+      separator = "&";
+      result.write(Uri.encodeQueryComponent(key));
+      if (value != null && value.isNotEmpty) {
+        result.write("=");
+        result.write(Uri.encodeQueryComponent(value));
+      }
+    }
+
+    queryParameters.forEach((key, value) {
+      if (value == null || value is String) {
+        writeParameter(key, value);
+      } else {
+        Iterable values = value;
+        for (String value in values) {
+          writeParameter(key, value);
+        }
+      }
+    });
+    return result.toString();
+  }
+
+  Future<Response?> get(String url, [Map<String, dynamic>? queryParameters]) {
     Uri uri = Uri.tryParse('${this.base}$url')!;
     // why are we doing it like this? because Uri doesnt have setters. wtf.
 
@@ -215,8 +241,9 @@ class Client {
 
   Response? _handleResponse(http.Response response) {
     _handleResponseErrors(response);
+    String decodedBody = utf8.decode(response.bodyBytes);
     return Response(
-        _decoder.convert(response.body), response.statusCode, response.headers);
+        _decoder.convert(decodedBody), response.statusCode, response.headers);
   }
 }
 

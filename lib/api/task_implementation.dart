@@ -44,23 +44,31 @@ class TaskAPIService extends APIService implements TaskService {
   }
 
   @override
-  Future<List<Task>?> getAll() {
-    return client.get('/tasks/all').then((response) {
+  Future<List<Task>?> getAll([Map<String, dynamic>? queryParameters]) {
+    return client.get('/tasks/all', queryParameters).then((response) {
       int page_n = 0;
       if (response == null) return null;
       if (response.headers["x-pagination-total-pages"] != null) {
         page_n = int.parse(response.headers["x-pagination-total-pages"]!);
       } else {
-        return Future.value(response.body);
+        return Future.value((response.body as List)
+            .map((item) => Task.fromJson(item))
+            .toList());
       }
 
       List<Future<void>> futureList = [];
       List<Task> taskList = [];
 
       for (int i = 0; i < page_n; i++) {
-        Map<String, List<String>> paramMap = {
+        Map<String, dynamic> paramMap = {
           "page": [i.toString()]
         };
+
+        if (queryParameters != null) {
+          queryParameters.forEach((key, value) {
+            paramMap[key] = value;
+          });
+        }
         futureList.add(client.get('/tasks/all', paramMap).then((pageResponse) {
           convertList(pageResponse?.body, (result) {
             taskList.add(Task.fromJson(result));
@@ -75,7 +83,7 @@ class TaskAPIService extends APIService implements TaskService {
 
   @override
   Future<Response?> getAllByProject(int projectId,
-      [Map<String, List<String>>? queryParameters]) {
+      [Map<String, dynamic>? queryParameters]) {
     return client
         .get('/projects/$projectId/tasks', queryParameters)
         .then((response) {
