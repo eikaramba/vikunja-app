@@ -33,9 +33,6 @@ dependencies:
   flutter_widget_from_html: ^0.14.11
   flutter_downloader: ^1.11.6
   flutter_colorpicker: ^1.0.3
-    git:
-      url: https://github.com/mchome/flutter_colorpicker
-      ref: master  # or 786d04363f587b818ce585d25b9c2bb62de95aba
   meta: ^1.11.0
   timezone: ^0.9.2
   json_annotation: ^4.8.1
@@ -43,6 +40,7 @@ dependencies:
   cupertino_http: ^1.4.0
   cronet_http: ^1.2.0
   package_info_plus: any
+
 dependency_overrides:
   flutter_colorpicker:
     git:
