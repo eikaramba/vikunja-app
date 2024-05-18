@@ -18,6 +18,7 @@ class TaskTile extends StatefulWidget {
   final bool showPriority;
   final bool loading;
   final ValueSetter<bool>? onMarkedAsDone;
+  final ValueSetter<bool>? onMarkedAsFavorite;
 
   const TaskTile({
     Key? key,
@@ -26,6 +27,7 @@ class TaskTile extends StatefulWidget {
     this.loading = false,
     this.showInfo = false,
     this.showPriority = true,
+    this.onMarkedAsFavorite,
     this.onMarkedAsDone,
   }) : super(key: key);
 /*
@@ -100,15 +102,8 @@ class TaskTileState extends State<TaskTile> with AutomaticKeepAliveClientMixin {
         ),
       );
     }
-    return IntrinsicHeight(
-        child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Container(
-        width: 4.0, // Adjust the width of the red line
-        color: widget.task.color,
-        //margin: EdgeInsets.only(left: 10.0),
-      ),
-      Flexible(
-          child: ListTile(
+    return ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 0.0),
         onTap: () {
           showModalBottomSheet<void>(
               context: context,
@@ -140,49 +135,75 @@ class TaskTileState extends State<TaskTile> with AutomaticKeepAliveClientMixin {
         leading: Checkbox(
           value: _currentTask.done,
           onChanged: (bool? newValue) {
-            _change(newValue);
+            _changeDone(newValue);
           },
         ),
-        trailing: IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push<Task>(
-                context,
-                MaterialPageRoute(
-                  builder: (buildContext) => TaskEditPage(
-                    task: _currentTask,
-                    taskState: taskState,
+        trailing: Wrap(
+          spacing: -16,
+          children: [
+            IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                Navigator.push<Task>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (buildContext) => TaskEditPage(
+                      task: _currentTask,
+                      taskState: taskState,
+                    ),
                   ),
-                ),
-              )
-                  .then((task) => setState(() {
-                        if (task != null) _currentTask = task;
-                      }))
-                  .whenComplete(() => widget.onEdit());
-            }),
-      ))
-    ]));
+                )
+                    .then((task) => setState(() {
+                          if (task != null) _currentTask = task;
+                        }))
+                    .whenComplete(() => widget.onEdit());
+              },
+            ),
+            IconButton(
+              icon: _currentTask.is_favorite
+                  ? Icon(Icons.star)
+                  : Icon(Icons.star_border),
+              color: _currentTask.is_favorite ? Colors.orange : null,
+              onPressed: () {
+                _toggleFavorite(!_currentTask.is_favorite);
+              },
+            ),
+          ],
+        ));
   }
 
-  void _change(bool? value) async {
+  void _changeDone(bool? value) async {
     value = value ?? false;
     setState(() {
       this._currentTask.loading = true;
     });
-    Task? newTask = await _updateTask(_currentTask, value);
+    Task newTask = _currentTask.copyWith(done: value);
+    _updateTask(newTask);
     setState(() {
-      if (newTask != null) this._currentTask = newTask;
+      this._currentTask = newTask;
       this._currentTask.loading = false;
     });
     widget.onEdit();
   }
 
-  Future<Task?> _updateTask(Task task, bool checked) {
+  void _toggleFavorite(bool? value) async {
+    value = value ?? false;
+    setState(() {
+      this._currentTask.loading = true;
+    });
+    Task newTask = _currentTask.copyWith(is_favorite: value);
+    _updateTask(newTask);
+    setState(() {
+      this._currentTask = newTask;
+      this._currentTask.loading = false;
+    });
+    if (widget.onMarkedAsFavorite != null) widget.onMarkedAsFavorite!(value);
+  }
+
+  Future<Task?> _updateTask(Task updatedTask) {
     return Provider.of<ProjectProvider>(context, listen: false).updateTask(
       context: context,
-      task: task.copyWith(
-        done: checked,
-      ),
+      task: updatedTask,
     );
   }
 

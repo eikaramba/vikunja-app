@@ -121,7 +121,7 @@ class LandingPageState extends State<LandingPage>
       case PageStatus.success:
         body = ListView.builder(
           scrollDirection: Axis.vertical,
-          padding: EdgeInsets.symmetric(vertical: 8.0),
+          padding: EdgeInsets.symmetric(vertical: 0.0),
           itemCount: _tasksByPriority.keys.length,
           itemBuilder: (context, index) {
             String priority = _tasksByPriority.keys.elementAt(index);
@@ -256,6 +256,7 @@ class LandingPageState extends State<LandingPage>
       key: UniqueKey(),
       task: task,
       onEdit: () => _loadList(context),
+      onMarkedAsFavorite: (newValue) => _loadList(context),
       showInfo: true,
       showPriority: false,
     );
@@ -291,17 +292,16 @@ class LandingPageState extends State<LandingPage>
       params["filter"] = "start_date>='now-1y'||start_date<='now'&&done=false";
       params["filter_include_nulls"] = "true";
     }
-    // if (filterId != null && filterId != 0) {
-    //   var response = await global.taskService.getAllByProject(filterId, params);
-    //   return _handleTaskList(response?.body, showOnlyDueDateTasks);
-    // } else {
-    var response = await global.taskService.getAll(params);
-    return _handleTaskList(response, showOnlyDueDateTasks);
-    // }
+    if (filterId != null && filterId != 0) {
+      var response = await global.taskService.getAllByProject(filterId, params);
+      return _handleTaskList(response?.body, showOnlyDueDateTasks);
+    } else {
+      var response = await global.taskService.getAll(params);
+      return _handleTaskList(response, showOnlyDueDateTasks);
+    }
   }
 
-  Future<void> _handleTaskList(
-      List<Task>? taskList, bool showOnlyDueDateTasks) {
+  void _handleTaskList(List<Task>? taskList, bool showOnlyDueDateTasks) {
     if (showOnlyDueDateTasks)
       taskList?.removeWhere((element) =>
           element.dueDate == null || element.dueDate!.year == 0001);
@@ -310,24 +310,33 @@ class LandingPageState extends State<LandingPage>
       setState(() {
         landingPageStatus = PageStatus.empty;
       });
-      return Future.value();
+      return;
     }
     //taskList.forEach((task) {task.list = lists.firstWhere((element) => element.id == task.list_id);});
+
     setState(() {
       if (taskList != null) {
         _tasks = taskList;
         _tasksByPriority =
             groupBy(_tasks, (Task task) => task.priority.toString());
-        var sortedKeys = _tasksByPriority.keys.toList(growable: false)
+        final sortedKeys = _tasksByPriority.keys.toList(growable: false)
           ..sort((k1, k2) => k2.compareTo(k1));
         _tasksByPriority = Map.fromIterable(sortedKeys,
             key: (k) => k, value: (k) => _tasksByPriority[k]!);
+        // sort tasks within each priority group by is_favorite
+        _tasksByPriority.forEach((key, value) {
+          value.sort((a, b) => a.is_favorite == b.is_favorite
+              ? 0
+              : a.is_favorite
+                  ? -1
+                  : 1);
+        });
 
         landingPageStatus = PageStatus.success;
       } else {
         landingPageStatus = PageStatus.error;
       }
     });
-    return Future.value();
+    setState(() {});
   }
 }

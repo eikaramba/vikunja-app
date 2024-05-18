@@ -18,6 +18,7 @@ class Task {
   final String identifier;
   final String title, description;
   final bool done;
+  final bool is_favorite;
   Color? color;
   final double? kanbanPosition;
   final double? percent_done;
@@ -47,6 +48,7 @@ class Task {
     this.color,
     this.kanbanPosition,
     this.percent_done,
+    this.is_favorite = false,
     this.subtasks = const [],
     this.labels = const [],
     this.attachments = const [],
@@ -76,6 +78,7 @@ class Task {
         description = json['description'],
         identifier = json['identifier'],
         done = json['done'],
+        is_favorite = json['is_favorite'],
         reminderDates = json['reminder_dates'] != null
             ? (json['reminder_dates'] as List<dynamic>)
                 .map((ts) => DateTime.parse(ts))
@@ -124,6 +127,7 @@ class Task {
         'description': description,
         'identifier': identifier.isNotEmpty ? identifier : null,
         'done': done,
+        'is_favorite': is_favorite,
         'reminder_dates': reminderDates
             .map((date) => date.toUtc().toIso8601String())
             .toList(),
@@ -163,6 +167,7 @@ class Task {
     String? description,
     String? identifier,
     bool? done,
+    bool? is_favorite,
     Color? color,
     double? kanbanPosition,
     double? percent_done,
@@ -189,6 +194,7 @@ class Task {
       description: description ?? this.description,
       identifier: identifier ?? this.identifier,
       done: done ?? this.done,
+      is_favorite: is_favorite ?? this.is_favorite,
       color: color ?? this.color,
       kanbanPosition: kanbanPosition ?? this.kanbanPosition,
       percent_done: percent_done ?? this.percent_done,
