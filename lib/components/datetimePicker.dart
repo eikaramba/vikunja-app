@@ -40,7 +40,11 @@ class VikunjaDateTimePicker extends StatelessWidget {
       onSaved: onSaved,
       onChanged: onChanged,
       onShowPicker: (context, currentValue) {
-        if (currentValue == null) currentValue = DateTime.now();
+        if (currentValue == null) {
+          DateTime now = DateTime.now();
+          currentValue =
+              DateTime(now.year, now.month, now.day); //set time to 0:00
+        }
         return _showDatePickerFuture(context, currentValue);
       },
     );
