@@ -152,9 +152,6 @@ class _TaskEditPageState extends State<TaskEditPage> {
                         onChanged: (_) => _changed = true,
                         validator: (description) {
                           if (description == null) return null;
-                          if (description.length > 1000) {
-                            return 'The description can have a maximum of 1000 characters.';
-                          }
                           return null;
                         },
                         decoration: new InputDecoration(

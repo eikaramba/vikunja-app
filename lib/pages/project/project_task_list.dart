@@ -360,6 +360,7 @@ class _ListPageState extends State<ListPage> {
       title: title,
       createdBy: currentUser,
       done: false,
+      priority: 3,
       bucketId: bucket?.id,
       projectId: _project.id,
     );
