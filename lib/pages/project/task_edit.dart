@@ -196,11 +196,15 @@ class _TaskEditPageState extends State<TaskEditPage> {
                               labelText: 'Repeat after',
                               border: InputBorder.none,
                               icon: Icon(Icons.repeat),
+                              contentPadding: EdgeInsets.all(0.0),
                             ),
                           ),
                         ),
+                        SizedBox(width: 2),
                         Expanded(
-                          child: DropdownButton<String>(
+                          child: DropdownButtonFormField(
+                            decoration: InputDecoration(
+                                contentPadding: EdgeInsets.all(0.0)),
                             isExpanded: true,
                             isDense: true,
                             value: _repeatAfterType ??
@@ -226,47 +230,6 @@ class _TaskEditPageState extends State<TaskEditPage> {
                         ),
                       ],
                     ),
-                    Column(
-                      children: _reminderInputs,
-                    ),
-                    GestureDetector(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: Row(
-                            children: <Widget>[
-                              Padding(
-                                  padding: EdgeInsets.only(right: 15, left: 2),
-                                  child: Icon(
-                                    Icons.alarm_add,
-                                    color: Colors.grey,
-                                  )),
-                              Text(
-                                'Add a reminder',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        onTap: () {
-                          // We add a new entry every time we add a new input, to make sure all inputs have a place where they can put their value.
-                          _reminderDates.add(DateTime(0));
-                          var currentIndex = _reminderDates.length - 1;
-
-                          // FIXME: Why does putting this into a row fail?
-                          setState(() => _reminderInputs.add(
-                                VikunjaDateTimePicker(
-                                  label: 'Reminder',
-                                  onSaved: (reminder) =>
-                                      _reminderDates[currentIndex] =
-                                          reminder ?? DateTime(0),
-                                  onChanged: (_) => _changed = true,
-                                  initialValue: DateTime.now(),
-                                ),
-                              ));
-                        }),
                     InputDecorator(
                       isEmpty: _priority == null,
                       decoration: InputDecoration(
@@ -278,6 +241,9 @@ class _TaskEditPageState extends State<TaskEditPage> {
                         value: priorityToString(_priority),
                         isExpanded: true,
                         isDense: true,
+                        underline: Container(
+                          height: 0,
+                        ),
                         onChanged: (String? newValue) {
                           setState(() {
                             _priority = priorityFromString(newValue);
@@ -298,70 +264,72 @@ class _TaskEditPageState extends State<TaskEditPage> {
                         }).toList(),
                       ),
                     ),
-                    Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 15, left: 2),
-                          child: Icon(
-                            Icons.label,
-                            color: Colors.grey,
-                          ),
+                    Row(children: [
+                      Padding(
+                        padding:
+                            const EdgeInsets.only(right: 15, left: 2, top: 24),
+                        child: Icon(
+                          Icons.label,
+                          color: Colors.grey,
                         ),
-                        Wrap(
-                            spacing: 10,
-                            children: _labels.map((Label label) {
-                              return LabelComponent(
-                                label: label,
-                                onDelete: () {
-                                  _removeLabel(label);
-                                },
-                              );
-                            }).toList()),
-                      ],
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Padding(
-                            padding: EdgeInsets.only(
-                                right: 15,
-                                left: 2.0 + (IconTheme.of(context).size ?? 0))),
-                        Container(
-                          width: MediaQuery.of(context).size.width -
-                              80 -
-                              ((IconTheme.of(context).size ?? 0) * 2),
-                          child: TypeAheadField(
-                            builder: (builder, controller, focusnode) {
-                              return TextFormField(
-                                controller: _labelTypeAheadController,
-                                focusNode: focusnode,
-                                decoration: InputDecoration(
-                                  labelText: 'Add a new label',
-                                  border: InputBorder.none,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_labels.length > 0)
+                            Wrap(
+                                spacing: 10,
+                                children: _labels.map((Label label) {
+                                  return LabelComponent(
+                                    label: label,
+                                    onDelete: () {
+                                      _removeLabel(label);
+                                    },
+                                  );
+                                }).toList()),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Container(
+                                width: MediaQuery.of(context).size.width -
+                                    80 -
+                                    ((IconTheme.of(context).size ?? 0) * 2),
+                                child: TypeAheadField(
+                                  builder: (builder, controller, focusnode) {
+                                    return TextFormField(
+                                      controller: _labelTypeAheadController,
+                                      focusNode: focusnode,
+                                      decoration: InputDecoration(
+                                        labelText: 'Add a new label',
+                                        border: InputBorder.none,
+                                      ),
+                                    );
+                                  },
+                                  suggestionsCallback: (pattern) =>
+                                      _searchLabel(pattern),
+                                  itemBuilder: (context, suggestion) {
+                                    return new ListTile(
+                                        title: Text(suggestion.toString()));
+                                  },
+                                  //transitionBuilder:
+                                  //    (context, suggestionsBox, controller) {
+                                  //  return suggestionsBox;
+                                  //},
+                                  onSelected: (suggestion) {
+                                    _addLabel(suggestion.toString());
+                                  },
                                 ),
-                              );
-                            },
-                            suggestionsCallback: (pattern) =>
-                                _searchLabel(pattern),
-                            itemBuilder: (context, suggestion) {
-                              return new ListTile(
-                                  title: Text(suggestion.toString()));
-                            },
-                            //transitionBuilder:
-                            //    (context, suggestionsBox, controller) {
-                            //  return suggestionsBox;
-                            //},
-                            onSelected: (suggestion) {
-                              _addLabel(suggestion.toString());
-                            },
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () => _createAndAddLabel(
-                              _labelTypeAheadController.text),
-                          icon: Icon(Icons.add),
-                        )
-                      ],
-                    ),
+                              ),
+                              IconButton(
+                                onPressed: () => _createAndAddLabel(
+                                    _labelTypeAheadController.text),
+                                icon: Icon(Icons.add),
+                              )
+                            ],
+                          )
+                        ],
+                      )
+                    ]),
                     Padding(
                       padding: const EdgeInsets.only(top: 15),
                       child: Row(
@@ -421,6 +389,47 @@ class _TaskEditPageState extends State<TaskEditPage> {
                         ],
                       ),
                     ),
+                    Column(
+                      children: _reminderInputs,
+                    ),
+                    GestureDetector(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Row(
+                            children: <Widget>[
+                              Padding(
+                                  padding: EdgeInsets.only(right: 15, left: 2),
+                                  child: Icon(
+                                    Icons.alarm_add,
+                                    color: Colors.grey,
+                                  )),
+                              Text(
+                                'Add a reminder',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        onTap: () {
+                          // We add a new entry every time we add a new input, to make sure all inputs have a place where they can put their value.
+                          _reminderDates.add(DateTime(0));
+                          var currentIndex = _reminderDates.length - 1;
+
+                          // FIXME: Why does putting this into a row fail?
+                          setState(() => _reminderInputs.add(
+                                VikunjaDateTimePicker(
+                                  label: 'Reminder',
+                                  onSaved: (reminder) =>
+                                      _reminderDates[currentIndex] =
+                                          reminder ?? DateTime(0),
+                                  onChanged: (_) => _changed = true,
+                                  initialValue: DateTime.now(),
+                                ),
+                              ));
+                        }),
                     ListView.separated(
                       separatorBuilder: (context, index) => Divider(),
                       padding: const EdgeInsets.all(16.0),

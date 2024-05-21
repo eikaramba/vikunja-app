@@ -267,6 +267,14 @@ class SettingsManager {
     return _storage.write(key: "show-upcoming-tasks", value: value ? "1" : "0");
   }
 
+  Future<bool> getShowDoneTasks() {
+    return _storage.read(key: "show-done-tasks").then((value) => value == "1");
+  }
+
+  Future<void> setShowDoneTasks(bool value) {
+    return _storage.write(key: "show-done-tasks", value: value ? "1" : "0");
+  }
+
   Future<bool> getLandingPageOnlyDueDateTasks() {
     return _storage
         .read(key: "landing-page-due-date-tasks")
