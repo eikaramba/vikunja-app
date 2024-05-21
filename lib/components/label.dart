@@ -24,7 +24,7 @@ class LabelComponent extends StatelessWidget {
       onDeleted: onDelete,
       deleteIconColor: label.textColor,
       deleteIcon: Container(
-        padding: EdgeInsets.all(3),
+        padding: EdgeInsets.all(2),
         decoration: BoxDecoration(
           color: Color.fromARGB(50, 0, 0, 0),
           shape: BoxShape.circle,

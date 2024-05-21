@@ -55,7 +55,7 @@ class ProjectProvider with ChangeNotifier {
     _tasks = [];
     notifyListeners();
 
-    Map<String, List<String>> queryParams = {
+    Map<String, dynamic> queryParams = {
       "sort_by": ["done", "id"],
       "order_by": ["asc", "desc"],
       "page": [page.toString()]
@@ -63,8 +63,7 @@ class ProjectProvider with ChangeNotifier {
 
     if (!displayDoneTasks) {
       queryParams.addAll({
-        "filter_by": ["done"],
-        "filter_value": ["false"],
+        "filter": "done = false",
         "sort_by": ["done"],
       });
     }
