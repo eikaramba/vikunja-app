@@ -96,6 +96,9 @@ class TaskAPIService extends APIService implements TaskService {
     });
   }
 
+  /**
+   * Deprecated
+   */
   @override
   Future<List<Task>?> getByOptions(TaskServiceOptions options) {
     Map<String, List<String>> optionsMap = options.getOptions();

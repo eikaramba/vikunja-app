@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vikunja_app/api/task_implementation.dart';
@@ -174,6 +175,15 @@ class VikunjaApp extends StatelessWidget {
                     return MaterialApp(
                       title: 'Vikunja',
                       theme: themeData,
+                      localizationsDelegates: [
+                        GlobalMaterialLocalizations.delegate,
+                        GlobalWidgetsLocalizations.delegate,
+                        GlobalCupertinoLocalizations.delegate,
+                      ],
+                      supportedLocales: [
+                        Locale('en'),
+                        Locale('de'),
+                      ],
                       scaffoldMessengerKey: globalSnackbarKey,
                       navigatorKey: navkey,
                       // <= this

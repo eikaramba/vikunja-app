@@ -1,7 +1,9 @@
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
-
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:vikunja_app/theme/constants.dart';
+import 'package:vikunja_app/utils/datetimes.dart';
 
 class VikunjaDateTimePicker extends StatelessWidget {
   final String label;
@@ -9,7 +11,7 @@ class VikunjaDateTimePicker extends StatelessWidget {
   final void Function(DateTime?)? onChanged;
   final DateTime? initialValue;
   final EdgeInsetsGeometry padding;
-  final Icon icon;
+  final Icon? icon;
   final InputBorder border;
 
   const VikunjaDateTimePicker({
@@ -25,18 +27,25 @@ class VikunjaDateTimePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Locale? locale = Localizations.localeOf(context);
+    initializeDateFormatting(locale.languageCode);
     return DateTimeField(
       //dateOnly: false,
       //editable: false, // Otherwise editing the date is not possible, this setting affects the underlying text field.
       initialValue: initialValue == null || initialValue!.year <= 1
           ? null
           : initialValue!.toLocal(),
-      format: vDateFormatLong,
-      decoration: InputDecoration(
-        labelText: label,
-        border: border,
-        icon: icon,
-      ),
+      format: getDateFormat(locale),
+      decoration: icon == null
+          ? InputDecoration(
+              labelText: label,
+              border: border,
+            )
+          : InputDecoration(
+              labelText: label,
+              border: border,
+              icon: icon,
+            ),
       onSaved: onSaved,
       onChanged: onChanged,
       onShowPicker: (context, currentValue) {
