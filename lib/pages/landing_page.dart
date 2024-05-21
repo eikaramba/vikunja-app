@@ -2,6 +2,7 @@ import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vikunja_app/global.dart';
+import 'package:vikunja_app/models/project.dart';
 import 'package:vikunja_app/service/services.dart';
 import 'package:collection/collection.dart';
 import 'dart:developer';
@@ -34,7 +35,9 @@ class LandingPageState extends State<LandingPage>
   int? defaultList;
   bool onlyDueDate = true;
   bool showUpcoming = false;
+  bool showDone = false;
   List<Task> _tasks = [];
+  Map<int, Project> projects = {};
   Map<String, List<Task>> _tasksByPriority = {};
   PageStatus landingPageStatus = PageStatus.built;
   static const platform = const MethodChannel('vikunja');
@@ -66,6 +69,10 @@ class LandingPageState extends State<LandingPage>
                   .settingsManager
                   .getShowUpcomingTasks()
                   .then((value) => showUpcoming = value);
+              VikunjaGlobal.of(context)
+                  .settingsManager
+                  .getShowDoneTasks()
+                  .then((value) => showDone = value);
             }));
     super.initState();
   }
@@ -203,6 +210,30 @@ class LandingPageState extends State<LandingPage>
                               value: showUpcoming,
                               onChanged: (bool? value) {},
                             )
+                          ]))),
+              PopupMenuItem(
+                  child: InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                        bool newval = !showDone;
+                        VikunjaGlobal.of(context)
+                            .settingsManager
+                            .setShowDoneTasks(newval)
+                            .then((value) {
+                          setState(() {
+                            showDone = newval;
+                            _loadList(context);
+                          });
+                        });
+                      },
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text("Show done tasks"),
+                            Checkbox(
+                              value: showDone,
+                              onChanged: (bool? value) {},
+                            )
                           ])))
             ];
           }),
@@ -255,6 +286,7 @@ class LandingPageState extends State<LandingPage>
     return TaskTile(
       key: UniqueKey(),
       task: task,
+      project: task.projectId != defaultList ? projects[task.projectId] : null,
       onEdit: () => _loadList(context),
       onMarkedAsFavorite: (newValue) => _loadList(context),
       showInfo: true,
@@ -272,9 +304,19 @@ class LandingPageState extends State<LandingPage>
     bool showOnlyDueDateTasks =
         await global.settingsManager.getLandingPageOnlyDueDateTasks();
     bool showUpcoming = await global.settingsManager.getShowUpcomingTasks();
+    bool showDone = await global.settingsManager.getShowDoneTasks();
     Map<String, dynamic>? frontend_settings =
         global.currentUser?.settings?.frontend_settings;
     int? filterId = 0;
+
+    //load projects
+    if (projects.isEmpty) {
+      var response = await global.projectService.getAll();
+      if (response != null) {
+        projects = Map.fromIterable(response,
+            key: (e) => e.id, value: (e) => e as Project);
+      }
+    }
 
     if (frontend_settings != null) {
       if (frontend_settings["filter_id_used_on_overview"] != null)
@@ -283,13 +325,14 @@ class LandingPageState extends State<LandingPage>
     Map<String, dynamic> params = {
       "sort_by": ["due_date", "start_date", "id"],
       "order_by": ["desc", "asc", "desc"],
-      "filter": "done = false",
+      "filter": "done = $showDone",
       "filter_include_nulls": "false",
       "per_page": "500"
     };
 
     if (!showUpcoming) {
-      params["filter"] = "start_date>='now-1y'||start_date<='now'&&done=false";
+      params["filter"] =
+          "start_date>='now-1y'||start_date<='now'&&done=$showDone";
       params["filter_include_nulls"] = "true";
     }
     if (filterId != null && filterId != 0) {

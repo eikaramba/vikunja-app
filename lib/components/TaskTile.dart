@@ -9,6 +9,7 @@ import 'package:vikunja_app/utils/misc.dart';
 import 'package:vikunja_app/pages/project/task_edit.dart';
 import 'package:vikunja_app/utils/priority.dart';
 
+import '../models/project.dart';
 import '../stores/project_store.dart';
 
 class TaskTile extends StatefulWidget {
@@ -17,6 +18,7 @@ class TaskTile extends StatefulWidget {
   final bool showInfo;
   final bool showPriority;
   final bool loading;
+  final Project? project;
   final ValueSetter<bool>? onMarkedAsDone;
   final ValueSetter<bool>? onMarkedAsFavorite;
 
@@ -26,6 +28,7 @@ class TaskTile extends StatefulWidget {
     required this.onEdit,
     this.loading = false,
     this.showInfo = false,
+    this.project,
     this.showPriority = true,
     this.onMarkedAsFavorite,
     this.onMarkedAsDone,
@@ -120,7 +123,10 @@ class TaskTileState extends State<TaskTile> with AutomaticKeepAliveClientMixin {
                 text: null,
                 children: <TextSpan>[
                   // TODO: get list name of task
-                  //TextSpan(text: widget.task.list.title+" - ", style: TextStyle(color: Colors.grey)),
+                  if (widget.project != null)
+                    TextSpan(
+                        text: widget.project!.title + " ",
+                        style: TextStyle(color: Colors.grey)),
                   TextSpan(text: widget.task.title),
                 ],
                 style: TextStyle(
