@@ -2,6 +2,7 @@
 
 import 'dart:math';
 
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -23,11 +24,14 @@ class NotificationClass {
   notifs.FlutterLocalNotificationsPlugin get notificationsPlugin =>
       new notifs.FlutterLocalNotificationsPlugin();
 
-  var androidSpecificsDueDate = notifs.AndroidNotificationDetails(
-      "Vikunja1", "Due Date Notifications",
-      channelDescription: "description",
-      icon: 'vikunja_notification_logo',
-      importance: notifs.Importance.high);
+  var androidSpecificsDueDate =
+      notifs.AndroidNotificationDetails("Vikunja1", "Due Date Notifications",
+          channelDescription: "description",
+          icon: 'vikunja_notification_logo',
+          actions: <AndroidNotificationAction>[
+            AndroidNotificationAction('setDone', 'Set as Done'),
+          ],
+          importance: notifs.Importance.high);
   var androidSpecificsReminders = notifs.AndroidNotificationDetails(
       "Vikunja2", "Reminder Notifications",
       channelDescription: "description",
@@ -56,7 +60,24 @@ class NotificationClass {
             (int? id, String? title, String? body, String? payload) async {
           didReceiveLocalNotificationSubject.add(NotificationClass(
               id: id, title: title, body: body, payload: payload));
-        });
+        },
+        notificationCategories: [
+          DarwinNotificationCategory(
+            'notificationCategory',
+            actions: <DarwinNotificationAction>[
+              DarwinNotificationAction.plain(
+                'setDone',
+                'Set as Done',
+                options: <DarwinNotificationActionOption>{
+                  DarwinNotificationActionOption.destructive,
+                },
+              )
+            ],
+            options: <DarwinNotificationCategoryOption>{
+              DarwinNotificationCategoryOption.hiddenPreviewShowTitle,
+            },
+          )
+        ]);
     var initializationSettings = notifs.InitializationSettings(
         android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
     await notificationsPlugin.initialize(initializationSettings,
@@ -66,8 +87,21 @@ class NotificationClass {
         print('notification payload: ' + resp.payload!);
         selectNotificationSubject.add(resp.payload!);
       }
-    });
+    }, onDidReceiveBackgroundNotificationResponse: notificationTapBackground);
     print("Notifications initialised successfully");
+  }
+
+  @pragma('vm:entry-point')
+  void notificationTapBackground(NotificationResponse notificationResponse) {
+    // ignore: avoid_print
+    print('notification(${notificationResponse.id}) action tapped: '
+        '${notificationResponse.actionId} with'
+        ' payload: ${notificationResponse.payload}');
+    if (notificationResponse.input?.isNotEmpty ?? false) {
+      // ignore: avoid_print
+      print(
+          'notification action tapped with input: ${notificationResponse.input}');
+    }
   }
 
   Future<void> notificationInitializer() async {
@@ -99,7 +133,7 @@ class NotificationClass {
         Duration.zero) return;
     await notifsPlugin.zonedSchedule(
         id, title, description, time, platformChannelSpecifics,
-        androidAllowWhileIdle: true,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: notifs
             .UILocalNotificationDateInterpretation
             .wallClockTime); // This literally schedules the notification
