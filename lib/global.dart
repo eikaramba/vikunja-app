@@ -20,6 +20,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:workmanager/workmanager.dart';
 
 import 'api/project.dart';
+import 'api/view.dart';
 import 'main.dart';
 
 class VikunjaGlobal extends StatefulWidget {
@@ -65,6 +66,9 @@ class VikunjaGlobalState extends State<VikunjaGlobal> {
   VersionChecker get versionChecker => new VersionChecker(snackbarKey);
 
   ProjectService get projectService => new ProjectAPIService(client, _storage);
+
+  ProjectViewService get projectViewService =>
+      new ProjectViewAPIService(client);
 
   TaskService get taskService => new TaskAPIService(client);
 

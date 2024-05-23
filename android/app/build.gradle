@@ -30,11 +30,18 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
+    namespace 'io.vikunja.flutteringvikunja'
     compileSdkVersion 34
-    ndkVersion "26.3.11579264"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
 
@@ -97,7 +104,7 @@ android {
     lint {
         disable 'InvalidPackage'
     }
-    namespace 'io.vikunja.flutteringvikunja'
+
 }
 
 flutter {
@@ -105,7 +112,6 @@ flutter {
 }
 
 dependencies {
-    // implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.20"
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

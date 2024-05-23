@@ -5,21 +5,19 @@ import 'package:vikunja_app/models/user.dart';
 
 @JsonSerializable()
 class Bucket {
-  int id, projectId, limit;
+  int id, projectViewId, limit;
   String title;
   double? position;
   final DateTime created, updated;
   User createdBy;
-  bool? isDoneBucket;
   final List<Task> tasks;
 
   Bucket({
     this.id = 0,
-    required this.projectId,
+    required this.projectViewId,
     required this.title,
     this.position,
     required this.limit,
-    this.isDoneBucket = false,
     DateTime? created,
     DateTime? updated,
     required this.createdBy,
@@ -30,13 +28,12 @@ class Bucket {
 
   Bucket.fromJSON(Map<String, dynamic> json)
       : id = json['id'],
-        projectId = json['project_id'],
+        projectViewId = json['project_view_id'],
         title = json['title'],
         position = json['position'] is int
             ? json['position'].toDouble()
             : json['position'],
         limit = json['limit'],
-        isDoneBucket = json['is_done_bucket'],
         created = DateTime.parse(json['created']),
         updated = DateTime.parse(json['updated']),
         createdBy = User.fromJson(json['created_by']),
@@ -48,11 +45,10 @@ class Bucket {
 
   toJSON() => {
         'id': id,
-        'list_id': projectId,
+        'project_view_id': projectViewId,
         'title': title,
         'position': position,
         'limit': limit,
-        'is_done_bucket': isDoneBucket,
         'created': created.toUtc().toIso8601String(),
         'updated': updated.toUtc().toIso8601String(),
         'created_by': createdBy.toJSON(),

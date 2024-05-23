@@ -11,6 +11,7 @@ import 'package:vikunja_app/models/bucket.dart';
 
 import '../models/project.dart';
 import '../models/server.dart';
+import '../models/view.dart';
 
 enum TaskServiceOptionSortBy {
   id,
@@ -149,6 +150,13 @@ abstract class ProjectService {
   //void setDefaultList(int? listId);
 }
 
+abstract class ProjectViewService {
+  Future<ProjectView?> get(int projectId, int viewId);
+  Future<ProjectView?> create(ProjectView view);
+  Future<ProjectView?> update(ProjectView view);
+  Future delete(int projectId, int viewId);
+}
+
 abstract class TaskService {
   Future<Task?> get(int taskId);
 
@@ -171,13 +179,13 @@ abstract class TaskService {
 abstract class BucketService {
   // Not implemented in the Vikunja API
   // Future<Bucket> get(int listId, int bucketId);
-  Future<Bucket?> update(Bucket bucket);
+  Future<Bucket?> update(Bucket bucket, int projectId, int viewId);
 
-  Future delete(int listId, int bucketId);
+  Future delete(int listId, int viewId, int bucketId);
 
-  Future<Bucket?> add(int listId, Bucket bucket);
+  Future<Bucket?> add(int listId, int viewId, Bucket bucket);
 
-  Future<Response?> getAllByList(int listId,
+  Future<Response?> getAllByList(int listId, int viewId,
       [Map<String, List<String>> queryParameters]);
 
   int get maxPages;
