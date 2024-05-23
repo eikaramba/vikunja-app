@@ -9,9 +9,29 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     as notifs;
 import 'package:rxdart/subjects.dart' as rxSub;
+import 'package:vikunja_app/global.dart';
 import 'package:vikunja_app/service/services.dart';
 
 import '../models/task.dart';
+
+@pragma('vm:entry-point')
+Future<void> notificationTapBackground(
+    NotificationResponse notificationResponse) async {
+  // ignore: avoid_print
+  print('notification(${notificationResponse.id}) action tapped: '
+      '${notificationResponse.actionId} with'
+      ' payload: ${notificationResponse.payload}');
+  // if (notificationResponse.payload?.isNotEmpty == true &&
+  //     notificationResponse.actionId == 'setDone') {
+  //   VikunjaGlobalState global = VikunjaGlobal.of(context); //<- FIXME: Cannot access context here :( how to use taskService then?
+  //   TaskService taskService = global.taskService;
+  //   Task? task =
+  //       await taskService.get(int.parse(notificationResponse.payload!));
+  //   if (task != null) {
+  //     taskService.update(task.copyWith(done: true));
+  //   }
+  // }
+}
 
 class NotificationClass {
   final int? id;
@@ -91,19 +111,6 @@ class NotificationClass {
     print("Notifications initialised successfully");
   }
 
-  @pragma('vm:entry-point')
-  void notificationTapBackground(NotificationResponse notificationResponse) {
-    // ignore: avoid_print
-    print('notification(${notificationResponse.id}) action tapped: '
-        '${notificationResponse.actionId} with'
-        ' payload: ${notificationResponse.payload}');
-    if (notificationResponse.input?.isNotEmpty ?? false) {
-      // ignore: avoid_print
-      print(
-          'notification action tapped with input: ${notificationResponse.input}');
-    }
-  }
-
   Future<void> notificationInitializer() async {
     iOSSpecifics = notifs.DarwinNotificationDetails();
     platformChannelSpecificsDueDate = notifs.NotificationDetails(
@@ -134,6 +141,7 @@ class NotificationClass {
     await notifsPlugin.zonedSchedule(
         id, title, description, time, platformChannelSpecifics,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: id.toString(),
         uiLocalNotificationDateInterpretation: notifs
             .UILocalNotificationDateInterpretation
             .wallClockTime); // This literally schedules the notification

@@ -40,6 +40,8 @@ android {
     }
 
     compileOptions {
+        // Flag to enable support for the new language APIs
+        coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -55,7 +57,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
-    /*
+
         signingConfigs {
         release {
             keyAlias keystoreProperties['keyAlias']
@@ -64,7 +66,7 @@ android {
             storePassword keystoreProperties['storePassword']
         }
     }
-     */
+
 
     flavorDimensions "deploy"
 
@@ -95,7 +97,7 @@ android {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            //signingConfig signingConfigs.release
+            signingConfig signingConfigs.release
         }
         debug {
             //signingConfig signingConfigs.debug
@@ -115,4 +117,5 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
 }
