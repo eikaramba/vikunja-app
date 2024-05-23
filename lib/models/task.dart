@@ -24,6 +24,7 @@ class Task {
   final double? percent_done;
   final User createdBy;
   Duration? repeatAfter;
+  final int? repeat_mode;
   final List<Task> subtasks;
   final List<Label> labels;
   final List<TaskAttachment> attachments;
@@ -45,6 +46,7 @@ class Task {
     this.parentTaskId,
     this.priority,
     this.repeatAfter,
+    this.repeat_mode,
     this.color,
     this.kanbanPosition,
     this.percent_done,
@@ -90,6 +92,7 @@ class Task {
         parentTaskId = json['parent_task_id'],
         priority = json['priority'],
         repeatAfter = Duration(seconds: json['repeat_after']),
+        repeat_mode = json['repeat_mode'],
         color = json['hex_color'] != ''
             ? Color(int.parse(json['hex_color'], radix: 16) + 0xFF000000)
             : null,
@@ -136,6 +139,7 @@ class Task {
         'end_date': endDate?.toUtc().toIso8601String(),
         'priority': priority,
         'repeat_after': repeatAfter?.inSeconds,
+        'repeat_mode': repeat_mode,
         'hex_color':
             color?.value.toRadixString(16).padLeft(8, '0').substring(2),
         'kanban_position': kanbanPosition,
@@ -173,6 +177,7 @@ class Task {
     double? percent_done,
     User? createdBy,
     Duration? repeatAfter,
+    int? repeat_mode,
     List<Task>? subtasks,
     List<Label>? labels,
     List<TaskAttachment>? attachments,
@@ -200,6 +205,7 @@ class Task {
       percent_done: percent_done ?? this.percent_done,
       createdBy: createdBy ?? this.createdBy,
       repeatAfter: repeatAfter ?? this.repeatAfter,
+      repeat_mode: repeat_mode ?? this.repeat_mode,
       subtasks: subtasks ?? this.subtasks,
       labels: labels ?? this.labels,
       attachments: attachments ?? this.attachments,
