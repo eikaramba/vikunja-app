@@ -184,7 +184,19 @@ class LandingPageState extends State<LandingPage>
                             Text("Only show tasks with due date"),
                             Checkbox(
                               value: onlyDueDate,
-                              onChanged: (bool? value) {},
+                              onChanged: (bool? value) {
+                                Navigator.pop(context);
+                                bool newval = !onlyDueDate;
+                                VikunjaGlobal.of(context)
+                                    .settingsManager
+                                    .setLandingPageOnlyDueDateTasks(newval)
+                                    .then((value) {
+                                  setState(() {
+                                    onlyDueDate = newval;
+                                    _loadList(context);
+                                  });
+                                });
+                              },
                             )
                           ]))),
               PopupMenuItem(
@@ -208,7 +220,19 @@ class LandingPageState extends State<LandingPage>
                             Text("Show future tasks"),
                             Checkbox(
                               value: showUpcoming,
-                              onChanged: (bool? value) {},
+                              onChanged: (bool? value) {
+                                Navigator.pop(context);
+                                bool newval = !showUpcoming;
+                                VikunjaGlobal.of(context)
+                                    .settingsManager
+                                    .setShowUpcomingTasks(newval)
+                                    .then((value) {
+                                  setState(() {
+                                    showUpcoming = newval;
+                                    _loadList(context);
+                                  });
+                                });
+                              },
                             )
                           ]))),
               PopupMenuItem(
@@ -232,7 +256,19 @@ class LandingPageState extends State<LandingPage>
                             Text("Show done tasks"),
                             Checkbox(
                               value: showDone,
-                              onChanged: (bool? value) {},
+                              onChanged: (bool? value) {
+                                Navigator.pop(context);
+                                bool newval = !showDone;
+                                VikunjaGlobal.of(context)
+                                    .settingsManager
+                                    .setShowDoneTasks(newval)
+                                    .then((value) {
+                                  setState(() {
+                                    showDone = newval;
+                                    _loadList(context);
+                                  });
+                                });
+                              },
                             )
                           ])))
             ];
