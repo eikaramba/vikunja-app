@@ -323,14 +323,32 @@ class LandingPageState extends State<LandingPage>
       key: UniqueKey(),
       task: task,
       project: task.projectId != defaultList ? projects[task.projectId] : null,
-      onEdit: () => _loadList(context),
-      onMarkedAsFavorite: (newValue) => _loadList(context),
+      onEdit: () => _loadList(context, true),
+      onMarkedAsFavorite: (newValue) =>
+          _handleOnMarkedAsFavorite(task, newValue),
       showInfo: true,
       showPriority: false,
     );
   }
 
-  Future<void> _loadList(BuildContext context) async {
+  void _handleOnMarkedAsFavorite(Task task, bool newValue) {
+    // find the task in the list and update it
+    Task newTask = task.copyWith(is_favorite: newValue);
+    setState(() {
+      // reorder the task in the list
+      _tasksByPriority[task.priority.toString()]!.remove(task);
+      _tasksByPriority[task.priority.toString()]!.add(newTask);
+      // sort tasks within each priority group by is_favorite
+      _tasksByPriority[task.priority.toString()]!
+          .sort((a, b) => a.is_favorite == b.is_favorite
+              ? 0
+              : a.is_favorite
+                  ? -1
+                  : 1);
+    });
+  }
+
+  Future<void> _loadList(BuildContext context, bool refetchData) async {
     _tasks = [];
     landingPageStatus = PageStatus.loading;
 
