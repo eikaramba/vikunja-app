@@ -17,7 +17,6 @@ ThemeData buildVikunjaMaterialDarkTheme() {
 
 ThemeData _buildVikunjaTheme(ThemeData base, {bool isDark = false}) {
   return base.copyWith(
-    useMaterial3: true,
     primaryColor: vPrimaryDark,
     primaryColorLight: vPrimary,
     primaryColorDark: vBlueDark,

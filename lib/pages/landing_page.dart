@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vikunja_app/global.dart';
 import 'package:vikunja_app/models/project.dart';
-import 'package:vikunja_app/service/services.dart';
 import 'package:collection/collection.dart';
 import 'dart:developer';
 import 'package:vikunja_app/utils/priority.dart';
