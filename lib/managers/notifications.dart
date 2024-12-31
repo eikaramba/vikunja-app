@@ -9,7 +9,6 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     as notifs;
 import 'package:rxdart/subjects.dart' as rxSub;
-import 'package:vikunja_app/global.dart';
 import 'package:vikunja_app/service/services.dart';
 
 import '../models/task.dart';

@@ -1,8 +1,6 @@
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl.dart';
-import 'package:vikunja_app/theme/constants.dart';
 import 'package:vikunja_app/utils/datetimes.dart';
 
 class VikunjaDateTimePicker extends StatelessWidget {

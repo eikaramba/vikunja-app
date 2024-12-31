@@ -84,20 +84,19 @@ class LandingPageState extends State<LandingPage> {
 
   @override
   void initState() {
-              
     super.initState();
 
     Future.delayed(Duration.zero, () {
       _updateDefaultList().then((_) {
         scheduleIntent();
-	VikunjaGlobal.of(context)
-                  .settingsManager
-                  .getShowUpcomingTasks()
-                  .then((value) => showUpcoming = value);
-              VikunjaGlobal.of(context)
-                  .settingsManager
-                  .getShowDoneTasks()
-                  .then((value) => showDone = value);
+        VikunjaGlobal.of(context)
+            .settingsManager
+            .getShowUpcomingTasks()
+            .then((value) => showUpcoming = value);
+        VikunjaGlobal.of(context)
+            .settingsManager
+            .getShowDoneTasks()
+            .then((value) => showDone = value);
       });
     });
   }
@@ -333,7 +332,7 @@ class LandingPageState extends State<LandingPage> {
       key: UniqueKey(),
       task: task,
       project: task.projectId != defaultList ? projects[task.projectId] : null,
-      onEdit: () => _loadList(context, true),
+      onEdit: () => _loadList(context),
       onMarkedAsFavorite: (newValue) =>
           _handleOnMarkedAsFavorite(task, newValue),
       showInfo: true,
@@ -358,7 +357,7 @@ class LandingPageState extends State<LandingPage> {
     });
   }
 
-  Future<void> _loadList(BuildContext context, bool refetchData) async {
+  Future<void> _loadList(BuildContext context) async {
     _tasks = [];
     landingPageStatus = PageStatus.loading;
 
@@ -408,7 +407,7 @@ class LandingPageState extends State<LandingPage> {
     }
   }
 
-  Future<void> _handleTaskList(
+  void _handleTaskList(List<Task>? taskList, bool showOnlyDueDateTasks) {
     if (showOnlyDueDateTasks)
       taskList?.removeWhere((element) =>
           element.dueDate == null || element.dueDate!.year == 0001);
