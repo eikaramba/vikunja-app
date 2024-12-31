@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:vikunja_app/api/client.dart';
 import 'package:vikunja_app/api/response.dart';
@@ -100,12 +99,27 @@ class TaskAPIService extends APIService implements TaskService {
    * Deprecated
    */
   @override
+  @deprecated
   Future<List<Task>?> getByOptions(TaskServiceOptions options) {
     Map<String, List<String>> optionsMap = options.getOptions();
     //optionString = "?sort_by[]=due_date&sort_by[]=id&order_by[]=asc&order_by[]=desc&filter_by[]=done&filter_value[]=false&filter_comparator[]=equals&filter_concat=and&filter_include_nulls=false&page=1";
     //print(optionString);
 
     return client.get('/tasks/all', optionsMap).then((response) {
+      if (response == null) return null;
+      return convertList(response.body, (result) => Task.fromJson(result));
+    });
+  }
+
+  @override
+  Future<List<Task>?> getByFilterString(String filterString,
+      [Map<String, List<String>>? queryParameters]) {
+    Map<String, List<String>> parameters = {
+      "filter": [filterString],
+      ...?queryParameters
+    };
+    print(parameters);
+    return client.get('/tasks/all', parameters).then((response) {
       if (response == null) return null;
       return convertList(response.body, (result) => Task.fromJson(result));
     });

@@ -110,6 +110,9 @@ class TaskTileState extends State<TaskTile> with AutomaticKeepAliveClientMixin {
         onTap: () {
           showModalBottomSheet<void>(
               context: context,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(10.0)),
+              ),
               builder: (BuildContext context) {
                 return TaskBottomSheet(
                     task: widget.task,
@@ -119,23 +122,28 @@ class TaskTileState extends State<TaskTile> with AutomaticKeepAliveClientMixin {
         },
         title: widget.showInfo
             ? RichText(
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 text: TextSpan(
-                text: null,
-                children: <TextSpan>[
-                  // TODO: get list name of task
+                  text: null,
+                  children: <TextSpan>[
+                    // TODO: get list name of task
                   if (widget.project != null)
                     TextSpan(
                         text: widget.project!.title + " ",
                         style: TextStyle(color: Colors.grey)),
-                  TextSpan(text: widget.task.title),
-                ],
-                style: TextStyle(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white
-                      : Colors.black,
-                ),
-              ))
-            : Text(_currentTask.title),
+                    TextSpan(text: widget.task.title),
+                  ],
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                ))
+            : Text(
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                _currentTask.title),
         subtitle: _buildTaskSubtitle(
             widget.task, widget.showInfo, widget.showPriority, context),
         leading: Checkbox(

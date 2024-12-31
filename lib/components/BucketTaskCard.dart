@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:provider/provider.dart';
+import 'package:vikunja_app/components/label.dart';
 import 'package:vikunja_app/models/task.dart';
 import 'package:vikunja_app/pages/project/task_edit.dart';
 import 'package:vikunja_app/utils/misc.dart';
@@ -61,7 +62,7 @@ class _BucketTaskCardState extends State<BucketTaskCard>
       children: <Widget>[
         Text(
           widget.task.identifier.isNotEmpty
-              ? '#${widget.task.identifier}'
+              ? '${widget.task.identifier}'
               : '${widget.task.id}',
           style: (theme.textTheme.titleSmall ?? TextStyle()).copyWith(
             color: Colors.grey,
@@ -86,6 +87,10 @@ class _BucketTaskCardState extends State<BucketTaskCard>
                       : Colors.white,
                 ),
                 backgroundColor: vGreen,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4.0),
+                  side: BorderSide(style: BorderStyle.none),
+                ),
               ),
             ),
           ));
@@ -98,6 +103,7 @@ class _BucketTaskCardState extends State<BucketTaskCard>
             widget.task.title,
             style: (theme.textTheme.titleMedium ?? TextStyle(fontSize: 16))
                 .copyWith(
+              fontWeight: FontWeight.normal,
               color: theme.brightness == Brightness.dark
                   ? Colors.white
                   : Colors.black,
@@ -116,13 +122,27 @@ class _BucketTaskCardState extends State<BucketTaskCard>
           child: Chip(
             avatar: Icon(
               Icons.calendar_month,
-              color: pastDue ? Colors.red : null,
+              color: pastDue
+                  ? Colors.red
+                  : (theme.brightness == Brightness.dark
+                      ? Colors.grey[400]
+                      : Colors.grey[600]),
             ),
             label: Text(durationToHumanReadable(duration)),
             labelStyle: (theme.textTheme.labelLarge ?? TextStyle()).copyWith(
-              color: pastDue ? Colors.red : null,
+              color: pastDue
+                  ? Colors.red
+                  : (theme.brightness == Brightness.dark
+                      ? Colors.grey[400]
+                      : Colors.grey[600]),
             ),
-            backgroundColor: pastDue ? Colors.red.withAlpha(20) : null,
+            backgroundColor: theme.brightness == Brightness.dark
+                ? Colors.grey[800]
+                : Colors.grey[200],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4.0),
+              side: BorderSide(style: BorderStyle.none),
+            ),
           ),
         ),
       ));
@@ -135,13 +155,7 @@ class _BucketTaskCardState extends State<BucketTaskCard>
     );
     widget.task.labels.sort((a, b) => a.title.compareTo(b.title));
     widget.task.labels.asMap().forEach((i, label) {
-      labelRow.children.add(Chip(
-        label: Text(label.title),
-        labelStyle: theme.textTheme.labelLarge?.copyWith(
-          color: label.textColor,
-        ),
-        backgroundColor: label.color,
-      ));
+      labelRow.children.add(LabelComponent(label: label));
     });
     if (widget.task.hasCheckboxes) {
       final checkboxStatistics = widget.task.checkboxStatistics;
@@ -158,6 +172,13 @@ class _BucketTaskCardState extends State<BucketTaskCard>
                 ? ''
                 : '${checkboxStatistics.checked} of ') +
             '${checkboxStatistics.total} tasks'),
+        backgroundColor: theme.brightness == Brightness.dark
+            ? Colors.grey[800]
+            : Colors.grey[200],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4.0),
+          side: BorderSide(style: BorderStyle.none),
+        ),
       ));
     }
     if (widget.task.attachments.isNotEmpty) {
@@ -166,17 +187,34 @@ class _BucketTaskCardState extends State<BucketTaskCard>
           angle: -pi / 4.0,
           child: Icon(Icons.attachment),
         ),
+        backgroundColor: theme.brightness == Brightness.dark
+            ? Colors.grey[800]
+            : Colors.grey[200],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4.0),
+          side: BorderSide(style: BorderStyle.none),
+        ),
       ));
     }
     if (widget.task.description.isNotEmpty) {
       labelRow.children.add(Chip(
-        label: Icon(Icons.notes),
+        label: Icon(Icons.notes, size: 20.0),
+        backgroundColor: theme.brightness == Brightness.dark
+            ? Colors.grey[800]
+            : Colors.grey[200],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4.0),
+          side: BorderSide(style: BorderStyle.none),
+        ),
       ));
     }
 
     final rowConstraints = BoxConstraints(minHeight: chipHeight);
     final card = Card(
       color: widget.task.color,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(5.0),
+      ),
       child: InkWell(
         child: Theme(
           data: Theme.of(context).copyWith(
@@ -184,7 +222,7 @@ class _BucketTaskCardState extends State<BucketTaskCard>
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           child: Padding(
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(6),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,9 +312,10 @@ class _BucketTaskCardState extends State<BucketTaskCard>
           });
           return true;
         };
-        final DragTargetAccept<TaskData> dragTargetOnAccept = (data) {
+        final DragTargetAccept<DragTargetDetails<TaskData>> dragTargetOnAccept =
+            (data) {
           final index = bucket.tasks.indexOf(widget.task);
-          widget.onAccept(data.task,
+          widget.onAccept(data.data.task,
               _dropLocation == DropLocation.above ? index : index + 1);
           setState(() {
             _dropLocation = DropLocation.none;
@@ -303,9 +342,9 @@ class _BucketTaskCardState extends State<BucketTaskCard>
                     height: (cardSize.height / 2) +
                         (dropAbove ? dropBoxSize.height : 0),
                     child: DragTarget<TaskData>(
-                      onWillAccept: (data) =>
-                          dragTargetOnWillAccept(data!, DropLocation.above),
-                      onAccept: dragTargetOnAccept,
+                      onWillAcceptWithDetails: (data) =>
+                          dragTargetOnWillAccept(data.data, DropLocation.above),
+                      onAcceptWithDetails: dragTargetOnAccept,
                       onLeave: dragTargetOnLeave,
                       builder: (_, __, ___) => SizedBox.expand(),
                     ),
@@ -314,9 +353,9 @@ class _BucketTaskCardState extends State<BucketTaskCard>
                     height: (cardSize.height / 2) +
                         (dropBelow ? dropBoxSize.height : 0),
                     child: DragTarget<TaskData>(
-                      onWillAccept: (data) =>
-                          dragTargetOnWillAccept(data!, DropLocation.below),
-                      onAccept: dragTargetOnAccept,
+                      onWillAcceptWithDetails: (data) =>
+                          dragTargetOnWillAccept(data.data, DropLocation.below),
+                      onAcceptWithDetails: dragTargetOnAccept,
                       onLeave: dragTargetOnLeave,
                       builder: (_, __, ___) => SizedBox.expand(),
                     ),

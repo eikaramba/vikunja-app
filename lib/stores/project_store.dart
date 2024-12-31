@@ -89,14 +89,10 @@ class ProjectProvider with ChangeNotifier {
       int page = 1}) {
     _buckets = [];
     pageStatus = PageStatus.loading;
-    notifyListeners();
 
     Map<String, List<String>> queryParams = {
       "page": [page.toString()]
     };
-
-    print(listId);
-    print(viewId);
 
     return VikunjaGlobal.of(context)
         .bucketService
@@ -145,7 +141,6 @@ class ProjectProvider with ChangeNotifier {
       required int listId}) {
     var globalState = VikunjaGlobal.of(context);
     if (newTask.bucketId == null) pageStatus = PageStatus.loading;
-    notifyListeners();
 
     return globalState.taskService.add(listId, newTask).then((task) {
       if (task == null) {
@@ -154,9 +149,9 @@ class ProjectProvider with ChangeNotifier {
       }
       if (_tasks.isNotEmpty) _tasks.insert(0, task);
       if (_buckets.isNotEmpty) {
-        final bucket =
-            _buckets[_buckets.indexWhere((b) => task.bucketId == b.id)];
-        bucket.tasks.add(task);
+        final Bucket? bucket =
+            _buckets.where((b) => task.bucketId == b.id).firstOrNull;
+        if (bucket != null) bucket.tasks.add(task);
       }
       pageStatus = PageStatus.success;
     });
@@ -252,12 +247,12 @@ class ProjectProvider with ChangeNotifier {
 
     task = await VikunjaGlobal.of(context).taskService.update(task.copyWith(
           bucketId: newBucketId,
-          kanbanPosition: calculateItemPosition(
+          position: calculateItemPosition(
             positionBefore: index != 0
-                ? _buckets[newBucketIndex].tasks[index - 1].kanbanPosition
+                ? _buckets[newBucketIndex].tasks[index - 1].position
                 : null,
             positionAfter: index < _buckets[newBucketIndex].tasks.length - 1
-                ? _buckets[newBucketIndex].tasks[index + 1].kanbanPosition
+                ? _buckets[newBucketIndex].tasks[index + 1].position
                 : null,
           ),
         ));
@@ -268,14 +263,14 @@ class ProjectProvider with ChangeNotifier {
     Task? secondTask;
     if (index == 0 &&
         _buckets[newBucketIndex].tasks.length > 1 &&
-        _buckets[newBucketIndex].tasks[1].kanbanPosition == 0) {
+        _buckets[newBucketIndex].tasks[1].position == 0) {
       secondTask = await VikunjaGlobal.of(context)
           .taskService
           .update(_buckets[newBucketIndex].tasks[1].copyWith(
-                kanbanPosition: calculateItemPosition(
-                  positionBefore: task.kanbanPosition,
+                position: calculateItemPosition(
+                  positionBefore: task.position,
                   positionAfter: 1 < _buckets[newBucketIndex].tasks.length - 1
-                      ? _buckets[newBucketIndex].tasks[2].kanbanPosition
+                      ? _buckets[newBucketIndex].tasks[2].position
                       : null,
                 ),
               ));
@@ -293,7 +288,7 @@ class ProjectProvider with ChangeNotifier {
         .indexWhere((t) => t.id == task?.id)] = task;
     _buckets[newBucketIndex]
         .tasks
-        .sort((a, b) => a.kanbanPosition!.compareTo(b.kanbanPosition!));
+        .sort((a, b) => a.position!.compareTo(b.position!));
 
     notifyListeners();
   }

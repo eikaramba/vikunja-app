@@ -1,4 +1,6 @@
 import 'dart:developer';
+import 'dart:core';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +15,7 @@ import 'package:vikunja_app/theme/buttonText.dart';
 import 'package:vikunja_app/theme/constants.dart';
 import 'package:vikunja_app/utils/validator.dart';
 
+import '../../components/SentryModal.dart';
 import '../../models/server.dart';
 
 class LoginPage extends StatefulWidget {
@@ -60,6 +63,7 @@ class _LoginPageState extends State<LoginPage> {
         print(value);
         if (value != null) setState(() => pastServers = value);
       });
+      showSentryModal(context, VikunjaGlobal.of(context));
     });
   }
 
@@ -270,7 +274,7 @@ class _LoginPageState extends State<LoginPage> {
                               .setIgnoreCertificates(value ?? false);
                           VikunjaGlobal.of(context).client.ignoreCertificates =
                               value ?? false;
-                        })
+                        }),
                   ],
                 ),
               ),

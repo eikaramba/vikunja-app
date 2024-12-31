@@ -31,13 +31,13 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace 'io.vikunja.flutteringvikunja'
-    compileSdkVersion 34
+    //compileSdkVersion flutter.compileSdkVersion
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
+    //sourceSets {
+    //    main.java.srcDirs += 'src/main/kotlin'
+   // }
 
     compileOptions {
         // Flag to enable support for the new language APIs
@@ -49,41 +49,33 @@ android {
 
     defaultConfig {
         applicationId "io.vikunja.app"
-        minSdkVersion 24
-        targetSdkVersion 34
+        minSdk flutter.minSdkVersion
+        targetSdk flutter.targetSdkVersion
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
-
-        signingConfigs {
+    signingConfigs {
         release {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
             storePassword keystoreProperties['storePassword']
         }
     }
 
-
-    flavorDimensions "deploy"
-
     productFlavors {
-        fdroid {
-            dimension "deploy"
-            //signingConfig null
-        }
         unsigned {
-            dimension "deploy"
-            //signingConfig null
+            signingConfig signingConfigs.debug
         }
-	    core {
-            dimension "deploy"
-            signingConfig signingConfigs.debug // TODO add signing key
+        production {
+            signingConfig signingConfigs.release
         }
     }
+
+    flavorDimensions "deploy"
 
     android.applicationVariants.all { variant ->
         if (variant.flavorName == "fdroid") {
@@ -95,8 +87,6 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.release
         }
         debug {
@@ -113,9 +103,8 @@ flutter {
     source '../..'
 }
 
-dependencies {
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
-}
+//dependencies {
+//    testImplementation 'junit:junit:4.13.2'
+//    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+//    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+//}

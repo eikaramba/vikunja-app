@@ -138,6 +138,7 @@ class NotificationClass {
         tz.TZDateTime.from(scheduledTime, tz.getLocation(currentTimeZone));
     if (time.difference(tz.TZDateTime.now(tz.getLocation(currentTimeZone))) <
         Duration.zero) return;
+    print("scheduled notification for time " + time.toString());
     await notifsPlugin.zonedSchedule(
         id, title, description, time, platformChannelSpecifics,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -165,7 +166,11 @@ class NotificationClass {
 
   Future<void> scheduleDueNotifications(TaskService taskService,
       {List<Task>? tasks}) async {
-    if (tasks == null) tasks = await taskService.getAll();
+    if (tasks == null)
+      tasks = await taskService.getByFilterString(
+          "done=false && (due_date > now || reminders > now)", {
+        "filter_include_nulls": ["false"]
+      });
     if (tasks == null) {
       print("did not receive tasks on notification update");
       return;
@@ -178,10 +183,10 @@ class NotificationClass {
           "Reminder",
           "This is your reminder for '" + task.title + "'",
           notificationsPlugin,
-          reminder,
+          reminder.reminder,
           await FlutterTimezone.getLocalTimezone(),
           platformChannelSpecificsReminders,
-          id: (reminder.millisecondsSinceEpoch / 1000).floor(),
+          id: (reminder.reminder.millisecondsSinceEpoch / 1000).floor(),
         );
       }
       if (task.hasDueDate) {
@@ -190,10 +195,11 @@ class NotificationClass {
           "The task '" + task.title + "' is due.",
           notificationsPlugin,
           task.dueDate!,
-          currentTimeZone,
+          await FlutterTimezone.getLocalTimezone(),
           platformChannelSpecificsDueDate,
           id: task.id,
         );
+        //print("scheduled notification for time " + task.dueDate!.toString());
       }
     }
     print("notifications scheduled successfully");

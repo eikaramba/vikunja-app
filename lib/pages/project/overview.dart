@@ -1,12 +1,13 @@
 import 'package:after_layout/after_layout.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:vikunja_app/pages/project/project_task_list.dart';
 
 import '../../components/AddDialog.dart';
 import '../../components/ErrorDialog.dart';
 import '../../global.dart';
 import '../../models/project.dart';
+import '../../stores/project_store.dart';
 
 class ProjectOverviewPage extends StatefulWidget {
   @override
@@ -24,12 +25,33 @@ class _ProjectOverviewPageState extends State<ProjectOverviewPage>
           ? _projects[_selectedDrawerIndex]
           : null;
 
+  List<int> expandedList = [];
+
   @override
   void afterFirstLayout(BuildContext context) {
     _loadProjects();
+    VikunjaGlobal.of(context)
+        .settingsManager
+        .getExpandedProjects()
+        .then((val) => setState(() {
+              expandedList = val ?? [];
+              print("Setting expanded list in setup to $expandedList");
+            }));
   }
 
-  List<int> expandedList = [];
+  void updateExpandedList() {
+    VikunjaGlobal.of(context).settingsManager.setExpandedProjects(expandedList);
+  }
+
+  void addToExpandedList(int id) {
+    expandedList.add(id);
+    updateExpandedList();
+  }
+
+  void removeFromExpandedList(int id) {
+    expandedList.remove(id);
+    updateExpandedList();
+  }
 
   Widget createProjectTile(Project project, int level) {
     EdgeInsets insets = EdgeInsets.fromLTRB(level * 10 + 10, 0, 0, 0);
@@ -53,9 +75,8 @@ class _ProjectOverviewPageState extends State<ProjectOverviewPage>
     return Column(children: [
       ListTile(
         onTap: () {
-          setState(() {
-            openList(context, project);
-          });
+          Provider.of<ProjectProvider>(context, listen: false);
+          openList(context, project);
         },
         contentPadding: insets,
         leading: IconButton(
@@ -65,9 +86,9 @@ class _ProjectOverviewPageState extends State<ProjectOverviewPage>
               ? () {
                   setState(() {
                     if (expanded)
-                      expandedList.remove(project.id);
+                      removeFromExpandedList(project.id);
                     else
-                      expandedList.add(project.id);
+                      addToExpandedList(project.id);
                   });
                 }
               : null,
@@ -122,6 +143,12 @@ class _ProjectOverviewPageState extends State<ProjectOverviewPage>
             ),
       appBar: AppBar(
         title: Text("Projects"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => _addProjectDialog(context),
+          )
+        ],
       ),
     );
   }
@@ -159,7 +186,6 @@ class _ProjectOverviewPageState extends State<ProjectOverviewPage>
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('The project was created successfully!'),
       ));
-    }).catchError((error) => showDialog(
-            context: context, builder: (context) => ErrorDialog(error: error)));
+    });
   }
 }

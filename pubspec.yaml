@@ -1,10 +1,11 @@
 name: vikunja_app
 description: Vikunja as Flutter cross platform app
 
-version: 0.1.6-beta
+version: 0.1.8-beta
 
 environment:
   sdk: ">=2.18.0 <3.0.0"
+  flutter: 3.22.2
 
 dependencies:
   flutter:
@@ -41,7 +42,9 @@ dependencies:
   collection: ^1.18.0
   cupertino_http: ^1.4.0
   cronet_http: ^1.2.0
-  package_info_plus: any
+  package_info_plus: ^4.2.0
+  html_editor_enhanced: ^2.6.0
+  sentry_flutter: ^8.9.0
 
 dev_dependencies:
   flutter_test:

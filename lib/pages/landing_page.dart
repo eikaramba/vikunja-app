@@ -1,4 +1,5 @@
-import 'package:after_layout/after_layout.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vikunja_app/global.dart';
@@ -9,6 +10,7 @@ import 'dart:developer';
 import 'package:vikunja_app/utils/priority.dart';
 
 import '../components/AddDialog.dart';
+import '../components/SentryModal.dart';
 import '../components/TaskTile.dart';
 import '../components/pagestatus.dart';
 import '../models/task.dart';
@@ -30,8 +32,7 @@ class LandingPage extends HomeScreenWidget {
   State<StatefulWidget> createState() => LandingPageState();
 }
 
-class LandingPageState extends State<LandingPage>
-    with AfterLayoutMixin<LandingPage> {
+class LandingPageState extends State<LandingPage> {
   int? defaultList;
   bool onlyDueDate = true;
   bool showUpcoming = false;
@@ -50,22 +51,46 @@ class LandingPageState extends State<LandingPage>
         );
   }
 
+  void handleMethod(List<String> method) {
+    switch (method[0]) {
+      case "open_add_task":
+        _addItemDialog(context);
+        break;
+      case "open_add_task_with_text":
+        print("open_add_task_with_text: ${method[1]}");
+        _addItemDialog(context, prefilledTitle: method[1]);
+        break;
+    }
+  }
+
+  void scheduleIntent() async {
+    try {
+      // This is needed when app is already open and quicktile is clicked
+      List<String>? method = (await platform.invokeMethod("isQuickTile", ""))
+          .map<String>((val) => val.toString())
+          .toList();
+
+      if (method != null) {
+        handleMethod(method);
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+    platform.setMethodCallHandler((call) async {
+      handleMethod([call.method.toString(), call.arguments.toString()]);
+      return Future.value();
+    });
+  }
+
   @override
   void initState() {
-    Future.delayed(
-        Duration.zero,
-        () => _updateDefaultList().then((value) {
-              try {
-                platform.invokeMethod("isQuickTile", "").then((value) =>
-                    {if (value is bool && value) _addItemDialog(context)});
-              } catch (e) {
-                log(e.toString());
-              }
-              VikunjaGlobal.of(context)
-                  .settingsManager
-                  .getLandingPageOnlyDueDateTasks()
-                  .then((value) => onlyDueDate = value);
-              VikunjaGlobal.of(context)
+              
+    super.initState();
+
+    Future.delayed(Duration.zero, () {
+      _updateDefaultList().then((_) {
+        scheduleIntent();
+	VikunjaGlobal.of(context)
                   .settingsManager
                   .getShowUpcomingTasks()
                   .then((value) => showUpcoming = value);
@@ -73,25 +98,8 @@ class LandingPageState extends State<LandingPage>
                   .settingsManager
                   .getShowDoneTasks()
                   .then((value) => showDone = value);
-            }));
-    super.initState();
-  }
-
-  @override
-  void afterFirstLayout(BuildContext context) {
-    try {
-      // This is needed when app is already open and quicktile is clicked
-      platform.setMethodCallHandler((call) {
-        switch (call.method) {
-          case "open_add_task":
-            _addItemDialog(context);
-            break;
-        }
-        return Future.value();
       });
-    } catch (e) {
-      log(e.toString());
-    }
+    });
   }
 
   @override
@@ -126,6 +134,7 @@ class LandingPageState extends State<LandingPage>
             children: [ListView(), Center(child: Text("This view is empty"))]);
         break;
       case PageStatus.success:
+        showSentryModal(context, VikunjaGlobal.of(context));
         body = ListView.builder(
           scrollDirection: Axis.vertical,
           padding: EdgeInsets.symmetric(vertical: 0.0),
@@ -278,7 +287,7 @@ class LandingPageState extends State<LandingPage>
     );
   }
 
-  _addItemDialog(BuildContext context) {
+  _addItemDialog(BuildContext context, {String? prefilledTitle}) {
     if (defaultList == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Please select a default list in the settings'),
@@ -287,6 +296,7 @@ class LandingPageState extends State<LandingPage>
       showDialog(
           context: context,
           builder: (_) => AddDialog(
+              prefilledTitle: prefilledTitle,
               onAddTask: (title, dueDate) => _addTask(title, dueDate, context),
               decoration: new InputDecoration(
                   labelText: 'Task Name', hintText: 'eg. Milk')));
@@ -398,7 +408,7 @@ class LandingPageState extends State<LandingPage>
     }
   }
 
-  void _handleTaskList(List<Task>? taskList, bool showOnlyDueDateTasks) {
+  Future<void> _handleTaskList(
     if (showOnlyDueDateTasks)
       taskList?.removeWhere((element) =>
           element.dueDate == null || element.dueDate!.year == 0001);

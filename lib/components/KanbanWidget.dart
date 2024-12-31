@@ -28,6 +28,11 @@ class KanbanClass {
 
   Project _project;
   ProjectView _view;
+
+  set view(ProjectView view) {
+    _view = view;
+  }
+
   Map<int, BucketProps> _bucketProps = {};
 
   KanbanClass(this.context, this.notify, this._onViewTapped,
@@ -504,24 +509,24 @@ class KanbanClass {
                     // DragTarget to drop tasks in empty buckets
                     if (bucket.tasks.length == 0)
                       DragTarget<TaskData>(
-                        onWillAccept: (data) {
+                        onWillAcceptWithDetails: (data) {
                           /*setState(() =>*/ _bucketProps[bucket.id]!
-                              .taskDropSize = data?.size; //);
+                              .taskDropSize = data.data.size; //);
                           notify();
                           return true;
                         },
-                        onAccept: (data) {
+                        onAcceptWithDetails: (data) {
                           Provider.of<ProjectProvider>(context, listen: false)
                               .moveTaskToBucket(
                                 context: context,
-                                task: data.task,
+                                task: data.data.task,
                                 newBucketId: bucket.id,
                                 index: 0,
                               )
                               .then((_) => ScaffoldMessenger.of(context)
                                       .showSnackBar(SnackBar(
                                     content: Text(
-                                        '\'${data.task.title}\' was moved to \'${bucket.title}\' successfully!'),
+                                        '\'${data.data.task.title}\' was moved to \'${bucket.title}\' successfully!'),
                                   )));
 
                           //setState(() =>

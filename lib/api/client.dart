@@ -47,17 +47,21 @@ class Client {
   }
 
   http.Client get httpClient {
-    if (Platform.isAndroid) {
-      final engine = cronet_http.CronetEngine.build(
-          cacheMode: cronet_http.CacheMode.memory, cacheMaxSize: 1000000);
-      return cronet_http.CronetClient.fromCronetEngine(engine);
-    }
-    if (Platform.isIOS || Platform.isMacOS) {
-      final config =
-          cupertino_http.URLSessionConfiguration.ephemeralSessionConfiguration()
-            ..cache =
-                cupertino_http.URLCache.withCapacity(memoryCapacity: 1000000);
-      return cupertino_http.CupertinoClient.fromSessionConfiguration(config);
+    try {
+      if (Platform.isAndroid) {
+        final engine = cronet_http.CronetEngine.build(
+            cacheMode: cronet_http.CacheMode.memory, cacheMaxSize: 1000000);
+        return cronet_http.CronetClient.fromCronetEngine(engine);
+      }
+      if (Platform.isIOS || Platform.isMacOS) {
+        final config = cupertino_http.URLSessionConfiguration
+            .ephemeralSessionConfiguration()
+          ..cache =
+              cupertino_http.URLCache.withCapacity(memoryCapacity: 1000000);
+        return cupertino_http.CupertinoClient.fromSessionConfiguration(config);
+      }
+    } catch (e) {
+      print("Error creating http client: $e. Falling back to default client.");
     }
     return io_client.IOClient();
   }
@@ -205,6 +209,12 @@ class Client {
       Map<String, dynamic> error;
       error = _decoder.convert(response.body);
 
+      if (response.statusCode == 401 &&
+          globalNavigatorKey.currentContext != null) {
+        VikunjaGlobal.of(globalNavigatorKey.currentContext!)
+            .logoutUser(globalNavigatorKey.currentContext!);
+      }
+
       final SnackBar snackBar = SnackBar(
         content:
             Text("Error code " + response.statusCode.toString() + " received."),
@@ -241,9 +251,8 @@ class Client {
 
   Response? _handleResponse(http.Response response) {
     _handleResponseErrors(response);
-    String decodedBody = utf8.decode(response.bodyBytes);
-    return Response(
-        _decoder.convert(decodedBody), response.statusCode, response.headers);
+    return Response(_decoder.convert(utf8.decode(response.bodyBytes)),
+        response.statusCode, response.headers);
   }
 }
 

@@ -35,7 +35,7 @@ enum TaskServiceOptionSortBy {
 
 enum TaskServiceOptionOrderBy { asc, desc }
 
-enum TaskServiceOptionFilterBy { done, due_date, reminder_dates }
+enum TaskServiceOptionFilterBy { done, due_date, reminders }
 
 enum TaskServiceOptionFilterValue { enum_true, enum_false, enum_null }
 
@@ -171,7 +171,10 @@ abstract class TaskService {
   Future<Response?> getAllByProject(int projectId,
       [Map<String, dynamic> queryParameters]);
 
+  @deprecated
   Future<List<Task>?> getByOptions(TaskServiceOptions options);
+  Future<List<Task>?> getByFilterString(String filterString,
+      [Map<String, List<String>> queryParameters]);
 
   int get maxPages;
 }
@@ -240,7 +243,10 @@ class SettingsManager {
     "workmanager-duration": "0",
     "recent-servers": "[\"https://try.vikunja.io\"]",
     "theme_mode": "system",
-    "landing-page-due-date-tasks": "1"
+    "landing-page-due-date-tasks": "1",
+    "sentry-enabled": "0",
+    "sentry-modal-shown": "0",
+    "expanded-projects": "[]",
   };
 
   void applydefaults() {
@@ -263,6 +269,24 @@ class SettingsManager {
 
   void setIgnoreCertificates(bool value) {
     _storage.write(key: "ignore-certificates", value: value ? "1" : "0");
+  }
+
+  Future<bool> getSentryEnabled() {
+    return _storage.read(key: "sentry-enabled").then((value) => value == "1");
+  }
+
+  Future<void> setSentryEnabled(bool value) {
+    return _storage.write(key: "sentry-enabled", value: value ? "1" : "0");
+  }
+
+  Future<bool> getSentryModalShown() {
+    return _storage
+        .read(key: "sentry-modal-shown")
+        .then((value) => value == "1");
+  }
+
+  Future<void> setSentryModalShown(bool value) {
+    return _storage.write(key: "sentry-modal-shown", value: value ? "1" : "0");
   }
 
   Future<bool> getShowUpcomingTasks() {
@@ -320,9 +344,18 @@ class SettingsManager {
   }
 
   Future<void> setPastServers(List<String>? server) {
-    var val = jsonEncode(server);
-    print("val: $val");
     return _storage.write(key: "recent-servers", value: jsonEncode(server));
+  }
+
+  Future<List<int>?> getExpandedProjects() async {
+    String jsonString = await _storage.read(key: "expanded-projects") ?? "[]";
+    List<dynamic> server = jsonDecode(jsonString);
+    return server.map((e) => e as int).toList();
+  }
+
+  Future<void> setExpandedProjects(List<int>? expandedProjects) {
+    return _storage.write(
+        key: "expanded-projects", value: jsonEncode(expandedProjects));
   }
 
   Future<FlutterThemeMode> getThemeMode() async {

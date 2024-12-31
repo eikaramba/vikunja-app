@@ -6,6 +6,27 @@ import 'package:vikunja_app/models/user.dart';
 import 'package:vikunja_app/models/taskAttachment.dart';
 import 'package:vikunja_app/utils/checkboxes_in_text.dart';
 
+class TaskReminder {
+  final int relative_period;
+  final String relative_to;
+  DateTime reminder;
+
+  TaskReminder(this.reminder)
+      : relative_period = 0,
+        relative_to = "";
+
+  TaskReminder.fromJson(Map<String, dynamic> json)
+      : reminder = DateTime.parse(json['reminder']),
+        relative_period = json['relative_period'],
+        relative_to = json['relative_to'];
+
+  toJSON() => {
+        'relative_period': relative_period,
+        'relative_to': relative_to,
+        'reminder': reminder.toUtc().toIso8601String(),
+      };
+}
+
 @JsonSerializable()
 class Task {
   final int id;
@@ -14,13 +35,13 @@ class Task {
   final int? projectId;
   final DateTime created, updated;
   DateTime? dueDate, startDate, endDate;
-  final List<DateTime> reminderDates;
+  final List<TaskReminder> reminderDates;
   final String identifier;
   final String title, description;
   final bool done;
   final bool is_favorite;
   Color? color;
-  final double? kanbanPosition;
+  final double? position;
   final double? percent_done;
   final User createdBy;
   Duration? repeatAfter;
@@ -48,7 +69,7 @@ class Task {
     this.repeatAfter,
     this.repeat_mode,
     this.color,
-    this.kanbanPosition,
+    this.position,
     this.percent_done,
     this.is_favorite = false,
     this.subtasks = const [],
@@ -73,6 +94,8 @@ class Task {
   }
 
   bool get hasDueDate => dueDate?.year != 1;
+  bool get hasStartDate => startDate?.year != 1;
+  bool get hasEndDate => endDate?.year != 1;
 
   Task.fromJson(Map<String, dynamic> json)
       : id = json['id'],
@@ -81,9 +104,9 @@ class Task {
         identifier = json['identifier'],
         done = json['done'],
         is_favorite = json['is_favorite'],
-        reminderDates = json['reminder_dates'] != null
-            ? (json['reminder_dates'] as List<dynamic>)
-                .map((ts) => DateTime.parse(ts))
+        reminderDates = json['reminders'] != null
+            ? (json['reminders'] as List<dynamic>)
+                .map((ts) => TaskReminder.fromJson(ts))
                 .toList()
             : [],
         dueDate = DateTime.parse(json['due_date']),
@@ -96,9 +119,9 @@ class Task {
         color = json['hex_color'] != ''
             ? Color(int.parse(json['hex_color'], radix: 16) + 0xFF000000)
             : null,
-        kanbanPosition = json['kanban_position'] is int
-            ? json['kanban_position'].toDouble()
-            : json['kanban_position'],
+        position = json['position'] is int
+            ? json['position'].toDouble()
+            : json['position'],
         percent_done = json['percent_done'] is int
             ? json['percent_done'].toDouble()
             : json['percent_done'],
@@ -131,9 +154,7 @@ class Task {
         'identifier': identifier.isNotEmpty ? identifier : null,
         'done': done,
         'is_favorite': is_favorite,
-        'reminder_dates': reminderDates
-            .map((date) => date.toUtc().toIso8601String())
-            .toList(),
+        'reminders': reminderDates.map((date) => date.toJSON()).toList(),
         'due_date': dueDate?.toUtc().toIso8601String(),
         'start_date': startDate?.toUtc().toIso8601String(),
         'end_date': endDate?.toUtc().toIso8601String(),
@@ -142,7 +163,7 @@ class Task {
         'repeat_mode': repeat_mode,
         'hex_color':
             color?.value.toRadixString(16).padLeft(8, '0').substring(2),
-        'kanban_position': kanbanPosition,
+        'position': position,
         'percent_done': percent_done,
         'project_id': projectId,
         'labels': labels.map((label) => label.toJSON()).toList(),
@@ -166,14 +187,14 @@ class Task {
     DateTime? dueDate,
     DateTime? startDate,
     DateTime? endDate,
-    List<DateTime>? reminderDates,
+    List<TaskReminder>? reminderDates,
     String? title,
     String? description,
     String? identifier,
     bool? done,
     bool? is_favorite,
     Color? color,
-    double? kanbanPosition,
+    double? position,
     double? percent_done,
     User? createdBy,
     Duration? repeatAfter,
@@ -201,7 +222,7 @@ class Task {
       done: done ?? this.done,
       is_favorite: is_favorite ?? this.is_favorite,
       color: color ?? this.color,
-      kanbanPosition: kanbanPosition ?? this.kanbanPosition,
+      position: position ?? this.position,
       percent_done: percent_done ?? this.percent_done,
       createdBy: createdBy ?? this.createdBy,
       repeatAfter: repeatAfter ?? this.repeatAfter,
